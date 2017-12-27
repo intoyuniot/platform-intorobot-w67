@@ -1,0 +1,50 @@
+{
+    "name": "intorobot-w67",
+    "title": "Espressif 8266",
+    "description": "Espressif Systems is a privately held fabless semiconductor company. They provide wireless communications and Wi-Fi chips which are widely used in mobile devices and the Internet of Things applications.",
+    "url": "https://www.intoyun.com/",
+    "homepage": "http://platformio.org/platforms/espressif8266",
+    "license": "Apache-2.0",
+    "engines": {
+        "platformio": "^3.0.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/intoyuniot/platform-intorobot-w67.git"
+    },
+    "version": "1.0.0",
+    "packageRepositories": [
+        "http://dl.intoyun.com/intoyuniot/packages/manifest.json"
+    ],
+    "frameworks": {
+        "intorobot": {
+            "package": "framework-intorobotespressif8266",
+            "script": "builder/frameworks/intorobot.py"
+        }
+    },
+    "packages": {
+        "toolchain-xtensa": {
+            "type": "toolchain",
+            "version": "~1.40802.0"
+        },
+        "framework-intorobotespressif8266": {
+            "type": "framework",
+            "optional": true,
+            "version": "~1.6.7"
+        },
+        "tool-esptool8266": {
+            "type": "uploader",
+            "version": "~1.411.0"
+        },
+        "tool-espotapy": {
+            "type": "uploader",
+            "optional": true,
+            "version": "~1.0.0"
+        },
+        "tool-mkspiffs": {
+            "type": "uploader",
+            "optional": true,
+            "version": "~1.102.0"
+        }
+    }
+}
