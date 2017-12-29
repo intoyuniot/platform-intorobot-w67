@@ -104,14 +104,6 @@ env.Replace(
     ],
 
     #
-    # Packages
-    #
-
-    FRAMEWORK_ARDUINOESP8266_DIR=platform.get_package_dir(
-        "framework-arduinoespressif8266"),
-    SDK_ESP8266_DIR=platform.get_package_dir("sdk-esp8266"),
-
-    #
     # Upload
     #
 
@@ -216,135 +208,27 @@ if "uploadfs" in COMMAND_LINE_TARGETS:
 # Framework and SDK specific configuration
 #
 
-if env.subst("$PIOFRAMEWORK") in ("intorobot"):
-    env.Append(
-        BUILDERS=dict(
-            ElfToBin=Builder(
-                action=env.VerboseAction(" ".join([
-                    '"$OBJCOPY"',
-                    "-eo", "$SOURCES",
-                    "-bo", "$TARGET",
-                    "-bs", ".irom0.text",
-                    "-bs", ".text",
-                    "-bs", ".data",
-                    "-bs", ".rodata",
-                    "-bc", "-ec"
-                ]), "Building $TARGET"),
-                suffix=".bin"
-            )
+env.Append(
+    BUILDERS=dict(
+        ElfToBin=Builder(
+            action=env.VerboseAction(" ".join([
+                '"$OBJCOPY"',
+                "-eo", "$SOURCES",
+                "-bo", "$TARGET",
+                "-bs", ".irom0.text",
+                "-bs", ".text",
+                "-bs", ".data",
+                "-bs", ".rodata",
+                "-bc", "-ec"
+            ]), "Building $TARGET"),
+            suffix=".bin"
         )
     )
-
-elif env.subst("$PIOFRAMEWORK") in ("arduino", "simba"):
-    env.Append(
-        LINKFLAGS=[
-            "-Wl,-wrap,system_restart_local",
-            "-Wl,-wrap,register_chipv6_phy"
-        ],
-
-        BUILDERS=dict(
-            ElfToBin=Builder(
-                action=env.VerboseAction(" ".join([
-                    '"$OBJCOPY"',
-                    "-eo",
-                    '"%s"' % join("$FRAMEWORK_ARDUINOESP8266_DIR",
-                                  "bootloaders", "eboot", "eboot.elf"),
-                    "-bo", "$TARGET",
-                    "-bm", "$BOARD_FLASH_MODE",
-                    "-bf", "${__get_board_f_flash(__env__)}",
-                    "-bz", "${__get_flash_size(__env__)}",
-                    "-bs", ".text",
-                    "-bp", "4096",
-                    "-ec",
-                    "-eo", "$SOURCES",
-                    "-bs", ".irom0.text",
-                    "-bs", ".text",
-                    "-bs", ".data",
-                    "-bs", ".rodata",
-                    "-bc", "-ec"
-                ]), "Building $TARGET"),
-                suffix=".bin"
-            )
-        )
-    )
-
-    # Handle uploading via OTA
-    ota_port = None
-    if env.get("UPLOAD_PORT"):
-        ota_port = re.match(
-            r"\"?((([0-9]{1,3}\.){3}[0-9]{1,3})|.+\.local)\"?$",
-            env.get("UPLOAD_PORT"))
-    if ota_port:
-        env.Replace(UPLOADCMD="$UPLOADOTACMD")
-
-else:
-    upload_address = None
-    if env.subst("$PIOFRAMEWORK") == "esp8266-rtos-sdk":
-        env.Replace(
-            UPLOAD_ADDRESS="0x20000",
-        )
-    else: # Configure Native SDK
-        env.Append(
-            CPPPATH=[
-                join("$SDK_ESP8266_DIR", "include"), "$PROJECTSRC_DIR"
-            ],
-
-            LIBPATH=[
-                join("$SDK_ESP8266_DIR", "lib"),
-                join("$SDK_ESP8266_DIR", "ld")
-            ],
-        )
-        env.Replace(
-            LIBS=[
-                "c", "gcc", "phy", "pp", "net80211", "lwip", "wpa", "wpa2",
-                "main", "wps", "crypto", "json", "ssl", "pwm", "upgrade",
-                "smartconfig", "airkiss", "at"
-            ],
-            UPLOAD_ADDRESS = "0X40000"
-        )
-
-    # ESP8266 RTOS SDK and Native SDK common configuration
-    env.Append(
-        BUILDERS=dict(
-            ElfToBin=Builder(
-                action=env.VerboseAction(" ".join([
-                    '"$OBJCOPY"',
-                    "-eo", "$SOURCES",
-                    "-bo", "${TARGETS[0]}",
-                    "-bm", "$BOARD_FLASH_MODE",
-                    "-bf", "${__get_board_f_flash(__env__)}",
-                    "-bz", "${__get_flash_size(__env__)}",
-                    "-bs", ".text",
-                    "-bs", ".data",
-                    "-bs", ".rodata",
-                    "-bc", "-ec",
-                    "-eo", "$SOURCES",
-                    "-es", ".irom0.text", "${TARGETS[1]}",
-                    "-ec", "-v"
-                ]), "Building $TARGET"),
-                suffix=".bin"
-            )
-        )
-    )
-
-    env.Replace(
-        UPLOADERFLAGS=[
-            "-vv",
-            "-cd", "$UPLOAD_RESETMETHOD",
-            "-cb", "$UPLOAD_SPEED",
-            "-cp", '"$UPLOAD_PORT"',
-            "-ca", "0x00000",
-            "-cf", "${SOURCES[0]}",
-            "-ca", "$UPLOAD_ADDRESS",
-            "-cf", "${SOURCES[1]}"
-        ],
-        UPLOADCMD='$UPLOADER $UPLOADERFLAGS',
-    )
+)
 
 #
 # Target: Build executable and linkable firmware or SPIFFS image
 #
-
 
 def __tmp_hook_before_pio_3_2():
     env.ProcessFlags(env.get("BUILD_FLAGS"))
@@ -360,7 +244,7 @@ if "nobuild" in COMMAND_LINE_TARGETS:
         __tmp_hook_before_pio_3_2()
         fetch_spiffs_size(env)
         target_firm = join("$BUILD_DIR", "spiffs.bin")
-    elif env.subst("$PIOFRAMEWORK") in ("intorobot", "arduino", "simba"):
+    elif env.subst("$PIOFRAMEWORK") in ("intorobot"):
         target_firm = join("$BUILD_DIR", "firmware.bin")
     else:
         target_firm = [
@@ -376,7 +260,7 @@ else:
         AlwaysBuild(env.Alias("buildfs", target_firm))
     else:
         target_elf = env.BuildProgram()
-        if env.subst("$PIOFRAMEWORK") in ("intorobot", "arduino", "simba"):
+        if env.subst("$PIOFRAMEWORK") in ("intorobot"):
             target_firm = env.ElfToBin(
                 join("$BUILD_DIR", "firmware"), target_elf)
         else:
