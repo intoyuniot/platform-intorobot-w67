@@ -12,7 +12,7 @@
         "type": "git",
         "url": "https://github.com/intoyuniot/platform-intorobot-w67.git"
     },
-    "version": "1.0.2",
+    "version": "1.0.3",
     "packageRepositories": [
         "http://dl.intoyun.com/intoyuniot/packages/manifest.json"
     ],
