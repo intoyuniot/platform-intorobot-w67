@@ -12,7 +12,7 @@
         "type": "git",
         "url": "https://github.com/intoyuniot/platform-intorobot-w67.git"
     },
-    "version": "1.0.6",
+    "version": "1.0.7",
     "packageRepositories": [
         "http://dl.intoyun.com/intoyuniot/packages/manifest.json"
     ],
@@ -30,7 +30,7 @@
         "framework-intorobot-w67": {
             "type": "framework",
             "optional": true,
-            "version": "~1.7.1"
+            "version": "~1.7.2"
         },
         "tool-esptool8266": {
             "type": "uploader",
